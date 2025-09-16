@@ -30,13 +30,18 @@ public class CommentController {
     @GetMapping("/comments") // Mapeia para /api/comments
     public List<Comment> getAllComments() {
         logger.info("Requisição recebida para buscar todos os comentários.");
-        return commentService.getAllComments();
+        List<Comment> comments = commentService.getAllComments();
+        // Loga a quantidade e o conteúdo da lista de comentários que será retornada.
+        logger.info("Retornando {} comentários: {}", comments.size(), comments);
+        return comments;
     }
 
     @PostMapping("/comments")
     public ResponseEntity<Comment> createComment(@RequestBody CommentRequest commentRequest) {
-        logger.info("Requisição recebida para criar um novo comentário por '{}'", commentRequest.author());
+        // Loga tanto o autor quanto o conteúdo da mensagem recebida.
+        logger.info("Requisição para criar comentário. Autor: '{}', Conteúdo: '{}'", commentRequest.author(), commentRequest.content());
         Comment createdComment = commentService.addComment(commentRequest);
+        logger.info("Comentário criado com sucesso: {}", createdComment);
         // Retorna 201 Created com o comentário criado no corpo da resposta.
         return ResponseEntity.status(HttpStatus.CREATED).body(createdComment);
     }
