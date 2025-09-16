@@ -1,26 +1,43 @@
 package com.facade.comentario.controller;
 
 import com.facade.comentario.model.Comment;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import com.facade.comentario.model.CommentRequest;
+import com.facade.comentario.service.CommentService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
 
-import java.util.Arrays;
 import java.util.List;
 
 @RestController
+@CrossOrigin(origins = "http://localhost:4200") // Permite requisições do frontend Angular
 @RequestMapping("/api") // Define o prefixo /api para todos os endpoints neste controlador
 public class CommentController {
 
-    @GetMapping("/comments") // Mapeia para /api/comments
-    public List<Comment> getAllComments() {
-        // Para demonstração, retornamos uma lista de comentários hardcoded.
-        // Em uma aplicação real, você buscaria isso de um serviço ou banco de dados.
-        Comment comment1 = new Comment(1L, "Alice", "Ótimo post!", "2023-10-26T10:00:00Z");
-        Comment comment2 = new Comment(2L, "Bob", "Concordo plenamente com a Alice.", "2023-10-26T10:05:00Z");
-        Comment comment3 = new Comment(3L, "Charlie", "Muito útil, obrigado!", "2023-10-26T10:15:00Z");
-        return Arrays.asList(comment1, comment2, comment3);
+    private static final Logger logger = LoggerFactory.getLogger(CommentController.class);
+
+    private final CommentService commentService;
+
+    @Autowired
+    public CommentController(CommentService commentService) {
+        this.commentService = commentService;
     }
 
-    // Você pode adicionar outros endpoints aqui, como @PostMapping para criar um comentário, etc.
+    @GetMapping("/comments") // Mapeia para /api/comments
+    public List<Comment> getAllComments() {
+        logger.info("Requisição recebida para buscar todos os comentários.");
+        return commentService.getAllComments();
+    }
+
+    @PostMapping("/comments")
+    public ResponseEntity<Comment> createComment(@RequestBody CommentRequest commentRequest) {
+        logger.info("Requisição recebida para criar um novo comentário por '{}'", commentRequest.author());
+        Comment createdComment = commentService.addComment(commentRequest);
+        // Retorna 201 Created com o comentário criado no corpo da resposta.
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdComment);
+    }
 }
