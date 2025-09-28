@@ -1,8 +1,5 @@
 package com.facade.comentario;
 
-import com.facade.comentario.Comment;
-import com.facade.comentario.CommentRequest;
-import com.facade.comentario.CommentService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import jakarta.validation.Valid;
@@ -41,19 +38,11 @@ public class CommentController {
         logger.info("Requisição POST em /api/facadeComments para criar comentário. Autor: '{}', Conteúdo: '{}'", commentRequest.author(), commentRequest.content());
         try {
             Comment createdComment = commentService.addComment(commentRequest);
-            logger.info("Comentário criado com sucesso: {}", createdComment);
             // Retorna 201 Created com o comentário criado no corpo da resposta.
             return ResponseEntity.status(HttpStatus.CREATED).body(createdComment);
-        } catch (IllegalStateException e) {
+        } catch (ExternalServiceException e) {
             logger.error("Falha ao processar a criação do comentário devido a erro no serviço externo.", e);
             return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).build();
         }
-    }
-
-    @PostMapping("/fetch-comments")
-    public ResponseEntity<Void> fetchComments() {
-        logger.info("Requisição recebida para buscar e persistir comentários de uma fonte externa.");
-        commentService.fetchAndPersistComments();
-        return ResponseEntity.ok().build();
     }
 }
